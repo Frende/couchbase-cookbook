@@ -31,7 +31,7 @@ module CouchbaseHelper
   def self.service_listening?(port, platform)
     case platform
     when "windows"
-      netstat_command = "netstat -lnt"
+      netstat_command = "netstat -nt"
     else
       netstat_command = "netstat -lnt"
     end
