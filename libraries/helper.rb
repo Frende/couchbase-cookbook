@@ -40,7 +40,7 @@ module CouchbaseHelper
     Chef::Log.debug("`#{netstat_command}` returned: \n\n #{cmd.stdout}")
 
     cmd.stdout.each_line.select do |l|
-      case node['platform']
+      case platform
       when "windows"
         l.split[1] =~ /#{port}/
       else
