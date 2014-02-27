@@ -66,7 +66,7 @@ when "windows"
 
   windows_package "Couchbase Server" do
     source File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file'])
-    options "/s /f#{Chef::Config[:file_cache_path]}/setup.iss"
+    options "/s /f1#{Chef::Config[:file_cache_path]}/setup.iss"
     installer_type :custom
     action :install
   end
