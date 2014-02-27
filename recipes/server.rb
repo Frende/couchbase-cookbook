@@ -99,7 +99,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
   static_config_file = ::File.join(node['couchbase']['server']['install_dir'], 'etc', 'couchbase', 'static_config')
 
   block do
-    file = Chef::Util::FileEdit.open(static_config_file)
+    file = Chef::Util::FileEdit.new(static_config_file)
     file.search_file_replace_line(/error_logger_mf_dir/, log_dir_line)
     file.write_file
   end
@@ -112,12 +112,20 @@ directory node['couchbase']['server']['database_path'] do
   recursive true
 end
 
-service "couchbase-server" do
-  supports :restart => true, :status => true
-  action [:enable, :start]
-  notifies :create, "ruby_block[block_until_operational]", :immediately
+case node['platform']
+when "windows"
+  service "CouchbaseServer" do
+    supports :restart => true, :status => true
+    action [:enable, :start]
+    notifies :create, "ruby_block[block_until_operational]", :immediately
+  end
+else
+  service "couchbase-server" do
+    supports :restart => true, :status => true
+    action [:enable, :start]
+    notifies :create, "ruby_block[block_until_operational]", :immediately
+  end
 end
-
 couchbase_node "self" do
   database_path node['couchbase']['server']['database_path']
 
