@@ -104,7 +104,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
     file.write_file
   end
 
-  notifies :restart, "service[couchbase-server]"
+  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]"
   not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
 end
 
