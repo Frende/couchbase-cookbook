@@ -28,8 +28,8 @@ require 'chef/rest'
 module CouchbaseHelper
   extend Chef::Mixin::ShellOut
 
-  def self.service_listening?(port)
-    case node['platform']
+  def self.service_listening?(port, platform)
+    case platform
     when "windows"
       netstat_command = "netstat -lnt"
     else

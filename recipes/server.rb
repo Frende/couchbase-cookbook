@@ -75,7 +75,7 @@ end
 ruby_block "block_until_operational" do
   block do
     Chef::Log.info "Waiting until Couchbase is listening on port #{node['couchbase']['server']['port']}"
-    until CouchbaseHelper.service_listening?(node['couchbase']['server']['port']) do
+    until CouchbaseHelper.service_listening?(node['couchbase']['server']['port'], node['platform']) do
       sleep 1
       Chef::Log.debug(".")
     end
