@@ -131,18 +131,18 @@ else
   end
 end
 
-tmp = <<-EOH
-   "#{node['couchbase']['server']['cli_path']}" node-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
-   "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{user}" --cluster-init-password="#{password}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
-  EOH
+cli_path    = node['couchbase']['server']['cli_path']
+fqdn        = node['fqdn']
+port        = node['couchbase']['server']['port']
+data_path   = node['couchbase']['server']['database_path']
+index_path  = node['couchbase']['server']['index_path']
 
-log tmp
-# batch 'Configure couchbase' do
-#   code <<-EOH
-#    "#{node['couchbase']['server']['cli_path']}" node-init -c #{node[:fqdn]}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
-#    "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node[:fqdn]}:#{node['couchbase']['server']['port']} --cluster-init-username="#{user}" --cluster-init-password="#{password}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
-#   EOH
-# end
+batch 'Configure couchbase' do
+  code <<-EOH
+   "#{node['couchbase']['server']['cli_path']}" node-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
+   "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
+  EOH
+end
 
 # couchbase_node "self" do
 #   database_path node['couchbase']['server']['database_path']
