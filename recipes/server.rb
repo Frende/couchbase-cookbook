@@ -146,11 +146,13 @@ if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}")
     code <<-EOH
       "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
     EOH
+  end
 else
   batch 'Add node to CouchBase cluster and rebalance' do
     code <<-EOH
       "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
     EOH
+  end
 end
 
 #rebalance -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password}
