@@ -23,7 +23,7 @@
 # Shamelessly stolen from Opscode's jenkins cookbook. Works for now.
 
 require 'chef/mixin/shell_out'
-require 'chef/rest'
+require 'net/http'
 
 module CouchbaseHelper
   extend Chef::Mixin::ShellOut
@@ -52,17 +52,21 @@ module CouchbaseHelper
   def self.endpoint_responding?(url)
     # XXX Should probably not use Chef::REST for this. Chef::REST only
     # Accepts application/json; why not just use Net::HTTP directly?
-    response = Chef::REST::RESTRequest.new(:GET, url, nil).call
-    if response.kind_of?(Net::HTTPSuccess) ||
+    # response = Chef::REST::RESTRequest.new(:GET, url, nil).call
+    uri = URI(url);
+    response = Net::Http.get_response(uri)
+
+    if response.is_a?(Net::HTTPSuccess) ||
           response.kind_of?(Net::HTTPRedirection) ||
           response.kind_of?(Net::HTTPForbidden)
       Chef::Log.debug("GET to #{url} successful")
       return true
     else
-      Chef::Log.debug("GET to #{url} returned #{response.code} / #{response.class}")
+      Chef::Log.debug("GET to #{url} returned #{response.code} / #{response.message}")
       return false
     end
-  rescue EOFError, Errno::ECONNREFUSED
+  rescue EOFError, Net::HTTPBadResponse
+    Chef::Log.debug("Failed to connect to #{url}. Response code #{response.code}.")
     return false
   end
 end
