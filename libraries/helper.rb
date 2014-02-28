@@ -53,20 +53,22 @@ module CouchbaseHelper
     # XXX Should probably not use Chef::REST for this. Chef::REST only
     # Accepts application/json; why not just use Net::HTTP directly?
     # response = Chef::REST::RESTRequest.new(:GET, url, nil).call
-    uri = URI(url);
-    response = Net::HTTP.get_response(uri)
+    begin
+      uri = URI(url);
+      response = Net::HTTP.get_response(uri)
 
-    if response.is_a?(Net::HTTPSuccess) ||
-          response.kind_of?(Net::HTTPRedirection) ||
-          response.kind_of?(Net::HTTPForbidden)
-      Chef::Log.debug("GET to #{url} successful")
-      return true
-    else
-      Chef::Log.debug("GET to #{url} returned #{response.code} / #{response.message}")
+      if response.is_a?(Net::HTTPSuccess) ||
+            response.kind_of?(Net::HTTPRedirection) ||
+            response.kind_of?(Net::HTTPForbidden)
+        Chef::Log.debug("GET to #{url} successful")
+        return true
+      else
+        Chef::Log.debug("GET to #{url} returned #{response.code} / #{response.message}")
+        return false
+      end
+    rescue EOFError, Net::HTTPBadResponse, Errno::ECONNREFUSED
+      Chef::Log.debug("Failed to connect to #{url}. Response code #{response.code}.")
       return false
     end
-  rescue EOFError, Net::HTTPBadResponse, Errno::ECONNREFUSED
-    Chef::Log.debug("Failed to connect to #{url}. Response code #{response.code}.")
-    return false
   end
 end
