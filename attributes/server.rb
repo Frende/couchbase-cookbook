@@ -45,11 +45,13 @@ default['couchbase']['server']['package_full_url'] = "#{node['couchbase']['serve
 case node['platform_family']
 when "windows"
   default['couchbase']['server']['install_dir'] = File.join("C:","Program Files","Couchbase","Server")
+  default['couchbase']['server']['cli_path'] = File.join(node['couchbase']['server']['install_dir'], "bin", "couchbase-cli.exe")
 else
   default['couchbase']['server']['install_dir'] = "/opt/couchbase"
 end
 
 default['couchbase']['server']['database_path'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","data")
+default['couchbase']['server']['index_path'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","index")
 default['couchbase']['server']['log_dir'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","logs")
 
 default['couchbase']['server']['username'] = "Administrator"

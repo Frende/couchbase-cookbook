@@ -126,27 +126,35 @@ else
     notifies :create, "ruby_block[block_until_operational]", :immediately
   end
 end
-couchbase_node "self" do
-  database_path node['couchbase']['server']['database_path']
 
-  username node['couchbase']['server']['username']
-  password node['couchbase']['server']['password']
+batch 'Configure couchbase' do
+ code <<-EOH
+   "#{node['couchbase']['server']['cli_path']}" node-init -c #{node[:fqdn]}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
+   "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node[:fqdn]}:#{node['couchbase']['server']['port']} --cluster-init-username="#{user}" --cluster-init-password="#{password}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
+ EOH
 end
 
-couchbase_cluster "default" do
-  memory_quota_mb node['couchbase']['server']['memory_quota_mb']
+# couchbase_node "self" do
+#   database_path node['couchbase']['server']['database_path']
 
-  username node['couchbase']['server']['username']
-  password node['couchbase']['server']['password']
-end
+#   username node['couchbase']['server']['username']
+#   password node['couchbase']['server']['password']
+# end
 
-couchbase_settings "web" do
-  settings({
-    "username" => node['couchbase']['server']['username'],
-    "password" => node['couchbase']['server']['password'],
-    "port" => 8091,
-  })
+# couchbase_cluster "default" do
+#   memory_quota_mb node['couchbase']['server']['memory_quota_mb']
 
-  username node['couchbase']['server']['username']
-  password node['couchbase']['server']['password']
-end
+#   username node['couchbase']['server']['username']
+#   password node['couchbase']['server']['password']
+# end
+
+# couchbase_settings "web" do
+#   settings({
+#     "username" => node['couchbase']['server']['username'],
+#     "password" => node['couchbase']['server']['password'],
+#     "port" => 8091,
+#   })
+
+#   username node['couchbase']['server']['username']
+#   password node['couchbase']['server']['password']
+# end
