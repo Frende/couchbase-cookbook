@@ -108,9 +108,13 @@ ruby_block "rewrite_couchbase_log_dir_config" do
   not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
 end
 
-# directory node['couchbase']['server']['database_path'] do
-#   recursive true
-# end
+directory node['couchbase']['server']['database_path'] do
+  recursive true
+end
+
+directory node['couchbase']['server']['index_path'] do
+  recursive true
+end
 
 case node['platform']
 when "windows"
