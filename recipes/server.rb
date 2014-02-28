@@ -26,6 +26,10 @@
 
 ::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
 
+if node['couchbase']['server']['cluster-init-server'].nil? || node['couchbase']['server']['cluster-init-server'].empty? then
+  throw 'No cluster-init-server set!'
+end
+
 if Chef::Config[:solo]
   missing_attrs = %w{
     password
@@ -131,11 +135,26 @@ else
   end
 end
 
-batch 'Configure couchbase' do
+batch 'Setting CouchBase data and index path' do
   code <<-EOH
    "#{node['couchbase']['server']['cli_path']}" node-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
   EOH
 end
+
+if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0 then
+  batch 'Initializing CouchBase cluster' do
+    code <<-EOH
+      "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
+    EOH
+else
+  batch 'Add node to CouchBase cluster and rebalance' do
+    code <<-EOH
+      "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
+    EOH
+end
+
+#rebalance -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password}
+
 # "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
 
 # couchbase_node "self" do
