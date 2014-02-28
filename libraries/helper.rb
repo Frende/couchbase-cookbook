@@ -60,14 +60,14 @@ module CouchbaseHelper
       if response.is_a?(Net::HTTPSuccess) ||
             response.kind_of?(Net::HTTPRedirection) ||
             response.kind_of?(Net::HTTPForbidden)
-        Chef::Log.debug("GET to #{url} successful")
+        Chef::Log.info("GET to #{url} successful")
         return true
       else
-        Chef::Log.debug("GET to #{url} returned #{response.code} / #{response.message}")
+        Chef::Log.info("GET to #{url} returned #{response.code} / #{response.message}")
         return false
       end
     rescue EOFError, Net::HTTPBadResponse, Errno::ECONNREFUSED
-      Chef::Log.debug("Failed to connect to #{url}. Response code #{response.code}.")
+      Chef::Log.info("Failed to connect to #{url}. Response code #{response.code}.")
       return false
     end
   end
