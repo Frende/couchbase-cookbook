@@ -73,8 +73,11 @@ module CouchbaseHelper
   end
 
   def self.is_configured?(cli_path, fqdn, user, pass)
-    cmd = Chef::ShellOut.new("#{cli_path} server-list -c #{fqdn} -u \"#{user}\" -p \"#{pass}\"")
+    cmd_string = "#{cli_path} server-list -c #{fqdn} -u \"#{user}\" -p \"#{pass}\""
+    Chef::Log.info("Executing cmd #{cmd_string}")
+    cmd = Chef::ShellOut.new(cmd_string)
     result = cmd.run_command
+    Chef::Log:info("Result of is_configured (exitstatus): #{result.exitstatus}")
     return result.exitstatus == 0
   end 
 end
