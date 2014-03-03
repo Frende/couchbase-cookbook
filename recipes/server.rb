@@ -94,6 +94,21 @@ ruby_block "block_until_operational" do
   action :nothing
 end
 
+case node['platform']
+when "windows"
+  service "CouchbaseServer" do
+    supports :restart => true, :status => true
+    action [:enable, :start]
+    notifies :create, "ruby_block[block_until_operational]", :immediately
+  end
+else
+  service "couchbase-server" do
+    supports :restart => true, :status => true
+    action [:enable, :start]
+    notifies :create, "ruby_block[block_until_operational]", :immediately
+  end
+end
+
 directory node['couchbase']['server']['log_dir'] do
   recursive true
 end
@@ -109,7 +124,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
   end
 
   notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]"
-  not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
+  #not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
 end
 
 directory node['couchbase']['server']['database_path'] do
@@ -118,21 +133,7 @@ end
 
 directory node['couchbase']['server']['index_path'] do
   recursive true
-end
-
-case node['platform']
-when "windows"
-  service "CouchbaseServer" do
-    supports :restart => true, :status => true
-    action [:enable, :start]
-    notifies :create, "ruby_block[block_until_operational]", :immediately
-  end
-else
-  service "couchbase-server" do
-    supports :restart => true, :status => true
-    action [:enable, :start]
-    notifies :create, "ruby_block[block_until_operational]", :immediately
-  end
+  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]"
 end
 
 batch 'Setting CouchBase data and index path' do

@@ -67,7 +67,7 @@ module CouchbaseHelper
         return false
       end
     rescue EOFError, Net::HTTPBadResponse, Errno::ECONNREFUSED
-      Chef::Log.info("Failed to connect to #{url}. Response code #{response.code}.")
+      Chef::Log.info("Failed to connect to #{url}.")
       return false
     end
   end
