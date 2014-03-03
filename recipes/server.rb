@@ -153,12 +153,25 @@ if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}")
     not_if {allready_configured}
   end
 else
-  batch 'Add node to CouchBase cluster and rebalance' do
-    code <<-EOH
-      "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
-    EOH
+  ruby_block 'Add node to CouchBase cluster and rebalance' do
+    cli_path = node['couchbase']['server']['cli_path']
+    cluster = node['couchbase']['server']['cluster-init-server']
+    fqdn = node['fqdn']
+    user = node['couchbase']['server']['username']
+    pass = node['couchbase']['server']['password']
+
+    block do
+      CouchbaseHelper.add_server(cli_path, cluster, fqdn, user, pass)
+    end
     not_if {allready_configured}
   end
+
+  # batch 'Add node to CouchBase cluster and rebalance' do
+  #   code <<-EOH
+  #     "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
+  #   EOH
+  #   not_if {allready_configured}
+  # end
 end
 
 #rebalance -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password}
