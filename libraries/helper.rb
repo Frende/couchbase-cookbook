@@ -77,7 +77,7 @@ module CouchbaseHelper
     Chef::Log.info("Executing cmd #{cmd_string}")
     cmd = Chef::ShellOut.new(cmd_string)
     result = cmd.run_command
-    Chef::Log:info("Result of is_configured (exitstatus): #{result.exitstatus}")
+    Chef::Log.info("Result of is_configured (exitstatus): #{result.exitstatus}")
     return result.exitstatus == 0
   end 
 end
