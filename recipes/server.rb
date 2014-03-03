@@ -116,10 +116,10 @@ end
 ruby_block "chef_if_configured" do
   block do
     if node['couchbase']['server']['is_configured'] then
-      log "Node is configured with couchbase"
+      Chef::Log:info("Node is configured with couchbase")
     else
-      log "Node is NOT configured with couchbase"
-      log "Value of is_configured is #{node['couchbase']['server']['is_configured']}"
+      Chef::Log:info("Node is NOT configured with couchbase")
+      Chef::Log:info("Value of is_configured is #{node['couchbase']['server']['is_configured']}")
     end
   end
 end
