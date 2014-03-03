@@ -113,6 +113,17 @@ directory node['couchbase']['server']['log_dir'] do
   recursive true
 end
 
+ruby_block "chef_if_configured" do
+  block do
+    if node['couchbase']['server']['is_configured'] then
+      log "Node is configured with couchbase"
+    else
+      log "Node is NOT configured with couchbase"
+      log "Value of is_configured is #{node['couchbase']['server']['is_configured']}"
+    end
+  end
+end
+
 ruby_block "rewrite_couchbase_log_dir_config" do
   log_dir_line = %{{error_logger_mf_dir, "#{node['couchbase']['server']['log_dir']}"}.}
   static_config_file = ::File.join(node['couchbase']['server']['install_dir'], 'etc', 'couchbase', 'static_config')
