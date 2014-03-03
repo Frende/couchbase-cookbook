@@ -71,4 +71,10 @@ module CouchbaseHelper
       return false
     end
   end
+
+  def self.is_configured?(cli_path, fqdn, user, pass)
+    cmd = Chef::ShellOut.new("#{cli_path} server-list -c #{fqdn} -u \"#{user}\" -p \"#{pass}\"")
+    result = cmd.run_command
+    return result.exitstatus == 0
+  end 
 end

@@ -113,17 +113,6 @@ directory node['couchbase']['server']['log_dir'] do
   recursive true
 end
 
-ruby_block "chef_if_configured" do
-  block do
-    if node['couchbase']['server']['is_configured'] then
-      Chef::Log.info("Node is configured with couchbase")
-    else
-      Chef::Log.info("Node is NOT configured with couchbase")
-      Chef::Log.info("Value of is_configured is #{node['couchbase']['server']['is_configured']}")
-    end
-  end
-end
-
 ruby_block "rewrite_couchbase_log_dir_config" do
   log_dir_line = %{{error_logger_mf_dir, "#{node['couchbase']['server']['log_dir']}"}.}
   static_config_file = ::File.join(node['couchbase']['server']['install_dir'], 'etc', 'couchbase', 'static_config')
@@ -136,7 +125,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
 
   notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]", :immediately
   #not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
-  not_if node['couchbase']['server']['is_configured']
+  not_if CouchbaseHelper.is_configured?("#{node['couchbase']['server']['cli_path']}", node['fqdn'], "#{node['couchbase']['server']['username']}", "#{node['couchbase']['server']['password']}")
 end
 
 directory node['couchbase']['server']['database_path'] do
@@ -151,7 +140,7 @@ batch 'Setting CouchBase data and index path' do
   code <<-EOH
    "#{node['couchbase']['server']['cli_path']}" node-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
   EOH
-  not_if node['couchbase']['server']['is_configured']
+  not_if CouchbaseHelper.is_configured?("#{node['couchbase']['server']['cli_path']}", node['fqdn'], "#{node['couchbase']['server']['username']}", "#{node['couchbase']['server']['password']}")
 end
 
 if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0 then
@@ -159,20 +148,14 @@ if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}")
     code <<-EOH
       "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
     EOH
-    not_if node['couchbase']['server']['is_configured']
+    not_if CouchbaseHelper.is_configured?("#{node['couchbase']['server']['cli_path']}", node['fqdn'], "#{node['couchbase']['server']['username']}", "#{node['couchbase']['server']['password']}")
   end
 else
   batch 'Add node to CouchBase cluster and rebalance' do
     code <<-EOH
       "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
     EOH
-    not_if node['couchbase']['server']['is_configured']
-  end
-end
-
-ruby_block "set_configured" do
-  block do
-    node.default['couchbase']['server']['is_configured'] = true
+    not_if CouchbaseHelper.is_configured?("#{node['couchbase']['server']['cli_path']}", node['fqdn'], "#{node['couchbase']['server']['username']}", "#{node['couchbase']['server']['password']}")
   end
 end
 
