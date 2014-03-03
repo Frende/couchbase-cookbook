@@ -123,7 +123,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
     file.write_file
   end
 
-  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]"
+  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]", :immediately
   #not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
 end
 
@@ -133,7 +133,7 @@ end
 
 directory node['couchbase']['server']['index_path'] do
   recursive true
-  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]"
+  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]", :immediately
 end
 
 batch 'Setting CouchBase data and index path' do
