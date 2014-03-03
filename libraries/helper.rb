@@ -74,13 +74,10 @@ module CouchbaseHelper
 
   def self.is_configured?(cli_path, fqdn, user, pass)
     cmd_string = "\"#{cli_path}\" server-list -c #{fqdn} -u \"#{user}\" -p \"#{pass}\""
-    Chef::Log.info("Executing cmd #{cmd_string}")
     begin
       cmd = shell_out!(cmd_string)
-      Chef::Log.info("Result of is_configured succeded")
       return true
     rescue
-      Chef::Log.info("Result of is_configured failed")
       return false
     end
   end 
