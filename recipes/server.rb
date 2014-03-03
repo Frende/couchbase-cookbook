@@ -161,7 +161,7 @@ end
 
 ruby_block "set_configured" do
   block do
-    node.default['couchbase']['server']['is_configured'] = 'true'
+    node.default['couchbase']['server']['is_configured'] = true
   end
 end
 
