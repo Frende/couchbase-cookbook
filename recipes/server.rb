@@ -24,28 +24,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
-
 if node['couchbase']['server']['cluster-init-server'].nil? || node['couchbase']['server']['cluster-init-server'].empty? then
   throw 'No cluster-init-server set!'
-end
-
-if Chef::Config[:solo]
-  missing_attrs = %w{
-    password
-  }.select do |attr|
-    node['couchbase']['server'][attr].nil?
-  end.map { |attr| "node['couchbase']['server']['#{attr}']" }
-
-  if !missing_attrs.empty?
-    Chef::Application.fatal!([
-        "You must set #{missing_attrs.join(', ')} in chef-solo mode.",
-        "For more information, see https://github.com/juliandunn/couchbase#chef-solo-note"
-      ].join(' '))
-  end
-else
-  # generate all passwords
-  (node.set['couchbase']['server']['password'] = secure_password && node.save) unless node['couchbase']['server']['password']
 end
 
 allready_configured = CouchbaseHelper.is_configured?(node['couchbase']['server']['cli_path'], node['fqdn'], node['couchbase']['server']['username'], node['couchbase']['server']['password'])
@@ -55,27 +35,16 @@ remote_file File.join(Chef::Config[:file_cache_path], node['couchbase']['server'
   action :create_if_missing
 end
 
-case node['platform']
-when "debian", "ubuntu"
-  package "libssl0.9.8"
-  dpkg_package File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file'])
-when "redhat", "centos", "scientific", "amazon", "fedora"
-  yum_package File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file']) do
-    options node['couchbase']['server']['allow_unsigned_packages'] == true ? "--nogpgcheck" : ""
-  end
-when "windows"
+template "#{Chef::Config[:file_cache_path]}/setup.iss" do
+  source "setup.iss.erb"
+  action :create
+end
 
-  template "#{Chef::Config[:file_cache_path]}/setup.iss" do
-    source "setup.iss.erb"
-    action :create
-  end
-
-  windows_package "Couchbase Server" do
-    source File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file'])
-    options "/s /f1#{Chef::Config[:file_cache_path]}/setup.iss"
-    installer_type :custom
-    action :install
-  end
+windows_package "Couchbase Server" do
+  source File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file'])
+  options "/s /f1#{Chef::Config[:file_cache_path]}/setup.iss"
+  installer_type :custom
+  action :install
 end
 
 ruby_block "block_until_operational" do
@@ -96,19 +65,10 @@ ruby_block "block_until_operational" do
   action :nothing
 end
 
-case node['platform']
-when "windows"
-  service "CouchbaseServer" do
-    supports :restart => true, :status => true
-    action [:enable, :start]
-    notifies :create, "ruby_block[block_until_operational]", :immediately
-  end
-else
-  service "couchbase-server" do
-    supports :restart => true, :status => true
-    action [:enable, :start]
-    notifies :create, "ruby_block[block_until_operational]", :immediately
-  end
+service "CouchbaseServer" do
+  supports :restart => true, :status => true
+  action [:enable, :start]
+  notifies :create, "ruby_block[block_until_operational]", :immediately
 end
 
 directory node['couchbase']['server']['log_dir'] do
@@ -125,8 +85,7 @@ ruby_block "rewrite_couchbase_log_dir_config" do
     file.write_file
   end
 
-  notifies :restart, node['platform'] == "windows" ? "service[CouchbaseServer]" : "service[couchbase-server]", :immediately
-  #not_if "grep '#{log_dir_line}' #{static_config_file}" # XXX won't work on Windows, no 'grep'
+  notifies :restart, "service[CouchbaseServer]", :immediately
   not_if {allready_configured}
 end
 
@@ -165,40 +124,4 @@ else
     end
     not_if {allready_configured}
   end
-
-  # batch 'Add node to CouchBase cluster and rebalance' do
-  #   code <<-EOH
-  #     "#{node['couchbase']['server']['cli_path']}" rebalance -c #{node['couchbase']['server']['cluster-init-server']}:#{node['couchbase']['server']['port']} --server-add=#{node['fqdn']} -u "#{node['couchbase']['server']['username']}" -p "#{node['couchbase']['server']['password']}"
-  #   EOH
-  #   not_if {allready_configured}
-  # end
 end
-
-#rebalance -c 127.0.0.1:8091 -u ${admin_user} -p ${admin_password}
-
-# "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
-
-# couchbase_node "self" do
-#   database_path node['couchbase']['server']['database_path']
-
-#   username node['couchbase']['server']['username']
-#   password node['couchbase']['server']['password']
-# end
-
-# couchbase_cluster "default" do
-#   memory_quota_mb node['couchbase']['server']['memory_quota_mb']
-
-#   username node['couchbase']['server']['username']
-#   password node['couchbase']['server']['password']
-# end
-
-# couchbase_settings "web" do
-#   settings({
-#     "username" => node['couchbase']['server']['username'],
-#     "password" => node['couchbase']['server']['password'],
-#     "port" => 8091,
-#   })
-
-#   username node['couchbase']['server']['username']
-#   password node['couchbase']['server']['password']
-# end
