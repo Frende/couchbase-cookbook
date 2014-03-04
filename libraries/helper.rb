@@ -86,7 +86,7 @@ module CouchbaseHelper
     #cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} -u \"#{user}\" -p \"#{pass}\""
     cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} --server-add-username=\"#{user}\" --server-add-password=\"#{pass}\" -u \"#{user}\" -p \"#{pass}\""
     Chef::Log.info(cmd_string)
-    cmd = shell_out!(cmd_string, :valid_exit_codes => [0,-1073740777])
+    cmd = shell_out!(cmd_string, :returns => [0,-1073740777])
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
   end 
 end
