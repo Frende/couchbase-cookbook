@@ -83,7 +83,8 @@ module CouchbaseHelper
   end 
 
   def self.add_server(cli_path, cluster, fqdn, user, pass)
-    cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} -u \"#{user}\" -p \"#{pass}\""
+    #cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} -u \"#{user}\" -p \"#{pass}\""
+    cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} --server-add-username=\"#{user}\" --server-add-password=\"#{pass}\""
     Chef::Log.info(cmd_string)
     cmd = shell_out!(cmd_string)
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
