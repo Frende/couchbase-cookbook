@@ -85,17 +85,20 @@ module CouchbaseHelper
     end
   end 
 
-  def self.add_server(cli_path, cluster, fqdn, user, pass)
-    cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} --server-add-username=\"#{user}\" --server-add-password=\"#{pass}\" -u \"#{user}\" -p \"#{pass}\""
-    Chef::Log.info(cmd_string)
+  def self.set_data_and_index_path(cli_path, fqdn, port, data_path, index_path)
+    cmd_string = "\"#{cli_path}\" node-init -c #{cluster}:#{port} --node-init-data-path=\"#{data_path}\" --node-init-index-path=\"#{index_path}\""
+    cmd = shell_out!(cmd_string, :returns => [0,-1073740777])
+    Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
+  end
 
+  def self.add_server(cli_path, cluster, port, fqdn, user, pass)
+    cmd_string = "\"#{cli_path}\" rebalance -c #{cluster}:#{port} --server-add=#{fqdn} --server-add-username=\"#{user}\" --server-add-password=\"#{pass}\" -u \"#{user}\" -p \"#{pass}\""
     cmd = shell_out!(cmd_string, :returns => [0,-1073740777])
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
   end 
 
-  def self.init_cluster(cli_path, cluster, user, pass, ramsize)
-    cmd_string = "\"#{cli_path}\" cluster-init -c #{cluster} --cluster-init-username=\"#{user}\" --cluster-init-password=\"#{pass}\" --cluster-init-ramsize=#{ramsize}"
-    Chef::Log.info(cmd_string)
+  def self.init_cluster(cli_path, cluster, port, user, pass, ramsize)
+    cmd_string = "\"#{cli_path}\" cluster-init -c #{cluster}:#{port} --cluster-init-username=\"#{user}\" --cluster-init-password=\"#{pass}\" --cluster-init-ramsize=#{ramsize}"
     cmd = shell_out!(cmd_string, :returns => [0])
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
   end 

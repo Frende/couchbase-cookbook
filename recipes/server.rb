@@ -111,10 +111,16 @@ directory node['couchbase']['server']['index_path'] do
   recursive true
 end
 
-batch 'Setting CouchBase data and index path' do
-  code <<-EOH
-   "#{node['couchbase']['server']['cli_path']}" node-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --node-init-data-path="#{node['couchbase']['server']['database_path']}" --node-init-index-path="#{node['couchbase']['server']['index_path']}"
-  EOH
+ruby_block 'Setting CouchBase data and index path'
+  cli_path = node['couchbase']['server']['cli_path']
+  fqdn = node['fqdn']
+  port = node['couchbase']['server']['port']
+  data_path = node['couchbase']['server']['database_path']
+  index_path = node['couchbase']['server']['index_path']
+
+  block do
+    CouchbaseHelper.set_data_and_index_path(cli_path, fqdn, port, data_path, index_path)
+  end
   not_if {allready_configured}
 end
 
@@ -122,16 +128,18 @@ ruby_block 'Add node to CouchBase cluster and rebalance' do
   cli_path = node['couchbase']['server']['cli_path']
   cluster = node['couchbase']['server']['cluster-init-server']
   fqdn = node['fqdn']
+  port = node['couchbase']['server']['port']
+
   ramsize = node['couchbase']['server']['memory_quota_mb']
 
   if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0
     block do
-      CouchbaseHelper.init_cluster(cli_path, cluster, username, password, ramsize)
+      CouchbaseHelper.init_cluster(cli_path, cluster, port, username, password, ramsize)
     end
     not_if {allready_configured}
   else
     block do
-      CouchbaseHelper.add_server(cli_path, cluster, fqdn, username, password)
+      CouchbaseHelper.add_server(cli_path, cluster, port, fqdn, username, password)
     end
     not_if {allready_configured}
   end
