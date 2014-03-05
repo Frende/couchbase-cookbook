@@ -30,6 +30,20 @@ end
 
 allready_configured = CouchbaseHelper.is_configured?(node['couchbase']['server']['cli_path'], node['fqdn'], node['couchbase']['server']['username'], node['couchbase']['server']['password'])
 
+username = ""
+password = ""
+
+if node['couchbase']['server']['databag'].nil? || node['couchbase']['server']['databag'].empty?
+  username = node['couchbase']['server']['username']
+  password = node['couchbase']['server']['password']
+else
+  users = Chef::EncryptedDataBagItem.load(node['couchbase']['server']['databag'], node['couchbase']['server']['databag_name'])
+  couchbase_credentials = users["couchbase"]
+
+  username = couchbase_credentials['username']
+  password = couchbase_credentials['password']
+end
+
 remote_file File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file']) do
   source node['couchbase']['server']['package_full_url']
   action :create_if_missing
@@ -108,18 +122,16 @@ ruby_block 'Add node to CouchBase cluster and rebalance' do
   cli_path = node['couchbase']['server']['cli_path']
   cluster = node['couchbase']['server']['cluster-init-server']
   fqdn = node['fqdn']
-  user = node['couchbase']['server']['username']
-  pass = node['couchbase']['server']['password']
   ramsize = node['couchbase']['server']['memory_quota_mb']
 
   if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0
     block do
-      CouchbaseHelper.init_cluster(cli_path, cluster, user, pass, ramsize)
+      CouchbaseHelper.init_cluster(cli_path, cluster, username, password, ramsize)
     end
     not_if {allready_configured}
   else
     block do
-      CouchbaseHelper.add_server(cli_path, cluster, fqdn, user, pass)
+      CouchbaseHelper.add_server(cli_path, cluster, fqdn, username, password)
     end
     not_if {allready_configured}
   end

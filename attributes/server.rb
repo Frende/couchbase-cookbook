@@ -45,6 +45,9 @@ default['couchbase']['server']['database_path'] = File.join(node['couchbase']['s
 default['couchbase']['server']['index_path'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","index")
 default['couchbase']['server']['log_dir'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","logs")
 
+default['couchbase']['server']['databag'] = ""
+default['couchbase']['server']['databag_name'] = ""
+
 default['couchbase']['server']['username'] = "Administrator"
 default['couchbase']['server']['password'] = nil
 
