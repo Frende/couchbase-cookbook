@@ -1,9 +1,7 @@
 Description
 ===========
 
-Installs and configures Couchbase.
-
-[![Build Status](https://travis-ci.org/juliandunn/couchbase.png)](https://travis-ci.org/juliandunn/couchbase)
+Installs and configures Couchbase. This is a stripped down Windows specific version forked from https://github.com/urbandecoder/couchbase 
 
 Requirements
 ============
@@ -13,11 +11,7 @@ Chef 0.10.10 and Ohai 0.6.12 are required due to the use of platform_family.
 Platforms
 ---------
 
-* Debian family (Debian, Ubuntu etc)
-* Red Hat family (Redhat, CentOS, Oracle etc)
 * Microsoft Windows
-
-Note that Couchbase Server does not support Windows 8 or Server 2012: see http://www.couchbase.com/issues/browse/MB-6395. This is targeted to be fixed in Couchbase 2.1.
 
 Attributes
 ==========

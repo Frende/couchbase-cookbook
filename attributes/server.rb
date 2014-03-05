@@ -22,36 +22,24 @@
 package_machine = node['kernel']['machine'] == "x86_64" ? "x86_64" : "x86"
 
 default['couchbase']['server']['edition'] = "community"
-default['couchbase']['server']['version'] = "2.1.1"
+default['couchbase']['server']['version'] = "2.2.0"
 default['couchbase']['server']['cluster-init-server'] = ""
 
-case node['platform_family']
-when "debian"
-  default['couchbase']['server']['package_file'] = "couchbase-server-#{node['couchbase']['server']['edition']}_#{package_machine}_#{node['couchbase']['server']['version']}.deb"
-when "rhel"
-  default['couchbase']['server']['package_file'] = "couchbase-server-#{node['couchbase']['server']['edition']}_#{package_machine}_#{node['couchbase']['server']['version']}.rpm"
-when "windows"
-  if node['kernel']['machine'] != 'x86_64'
-    Chef::Log.error("Couchbase Server on Windows must be installed on a 64-bit machine")
-  else
-    default['couchbase']['server']['package_file'] = "couchbase-server-#{node['couchbase']['server']['edition']}_#{package_machine}_#{node['couchbase']['server']['version']}.setup.exe"
-  end
+if node['kernel']['machine'] != 'x86_64' && node['couchbase']['server']['version'] == "2.0.0"
+  Chef::Log.error("Couchbase Server 2.0.0 on Windows must be installed on a 64-bit machine. Later versions have support for x86.")
+elsif ["2.0.0", "2.0.1", "2.1.0", "2.1.1"].include? node['couchbase']['server']['version']
+  default['couchbase']['server']['package_file'] = "couchbase-server-#{node['couchbase']['server']['edition']}_#{package_machine}_#{node['couchbase']['server']['version']}.setup.exe"
 else
-  Chef::Log.error("Couchbase Server is not supported on #{node['platform_family']}")
+  default['couchbase']['server']['package_file'] = "couchbase-server-#{node['couchbase']['server']['edition']}_#{node['couchbase']['server']['version']}_#{package_machine}.setup.exe"
 end
 
 default['couchbase']['server']['package_base_url'] = "http://packages.couchbase.com/releases/#{node['couchbase']['server']['version']}"
 default['couchbase']['server']['package_full_url'] = "#{node['couchbase']['server']['package_base_url']}/#{node['couchbase']['server']['package_file']}"
 
-case node['platform_family']
-when "windows"
-  default['couchbase']['server']['cli_cmd'] = "couchbase-cli.exe"
-  default['couchbase']['server']['install_dir'] = File.join("C:","Program Files","Couchbase","Server")
-  default['couchbase']['server']['cli_path'] = File.join(node['couchbase']['server']['install_dir'], "bin", node['couchbase']['server']['cli_cmd'])
-  default['couchbase']['server']['cli_dir'] = File.join(node['couchbase']['server']['install_dir'], "bin")
-else
-  default['couchbase']['server']['install_dir'] = "/opt/couchbase"
-end
+default['couchbase']['server']['cli_cmd'] = "couchbase-cli.exe"
+default['couchbase']['server']['install_dir'] = File.join("C:","Program Files","Couchbase","Server")
+default['couchbase']['server']['cli_dir'] = File.join(node['couchbase']['server']['install_dir'], "bin")
+default['couchbase']['server']['cli_path'] = File.join(node['couchbase']['server']['cli_dir'], node['couchbase']['server']['cli_cmd'])
 
 default['couchbase']['server']['database_path'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","data")
 default['couchbase']['server']['index_path'] = File.join(node['couchbase']['server']['install_dir'],"var","lib","couchbase","index")

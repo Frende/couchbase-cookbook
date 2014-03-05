@@ -73,20 +73,30 @@ module CouchbaseHelper
   end
 
   def self.is_configured?(cli_path, fqdn, user, pass)
+    Chef::Log.info("Checking if cluster can be contacted locally...")
     cmd_string = "\"#{cli_path}\" server-list -c #{fqdn} -u \"#{user}\" -p \"#{pass}\""
     begin
       cmd = shell_out!(cmd_string)
+      Chef::Log.info("Cluster successfully contacted.")
       return true
     rescue
+      Chef::Log.info("Failed to contact cluster.")
       return false
     end
   end 
 
   def self.add_server(cli_path, cluster, fqdn, user, pass)
-    #cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} -u \"#{user}\" -p \"#{pass}\""
     cmd_string = "\"#{cli_path}\" rebalance -c #{cluster} --server-add=#{fqdn} --server-add-username=\"#{user}\" --server-add-password=\"#{pass}\" -u \"#{user}\" -p \"#{pass}\""
     Chef::Log.info(cmd_string)
+
     cmd = shell_out!(cmd_string, :returns => [0,-1073740777])
+    Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
+  end 
+
+  def self.init_cluster(cli_path, cluster, user, pass, ramsize)
+    cmd_string = "\"#{cli_path}\" cluster-init -c #{cluster} --cluster-init-username=\"#{user}\" --cluster-init-password=\"#{pass}\" --cluster-init-ramsize=#{ramsize}"
+    Chef::Log.info(cmd_string)
+    cmd = shell_out!(cmd_string, :returns => [0])
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
   end 
 end

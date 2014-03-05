@@ -104,21 +104,20 @@ batch 'Setting CouchBase data and index path' do
   not_if {allready_configured}
 end
 
-if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0 then
-  batch 'Initializing CouchBase cluster' do
-    code <<-EOH
-      "#{node['couchbase']['server']['cli_path']}" cluster-init -c #{node['fqdn']}:#{node['couchbase']['server']['port']} --cluster-init-username="#{node['couchbase']['server']['username']}" --cluster-init-password="#{node['couchbase']['server']['password']}" --cluster-init-ramsize=#{node['couchbase']['server']['memory_quota_mb']}
-    EOH
-    not_if {allready_configured}
-  end
-else
-  ruby_block 'Add node to CouchBase cluster and rebalance' do
-    cli_path = node['couchbase']['server']['cli_path']
-    cluster = node['couchbase']['server']['cluster-init-server']
-    fqdn = node['fqdn']
-    user = node['couchbase']['server']['username']
-    pass = node['couchbase']['server']['password']
+ruby_block 'Add node to CouchBase cluster and rebalance' do
+  cli_path = node['couchbase']['server']['cli_path']
+  cluster = node['couchbase']['server']['cluster-init-server']
+  fqdn = node['fqdn']
+  user = node['couchbase']['server']['username']
+  pass = node['couchbase']['server']['password']
+  ramsize = node['couchbase']['server']['memory_quota_mb']
 
+  if node['fqdn'].casecmp("#{node['couchbase']['server']['cluster-init-server']}") == 0
+    block do
+      CouchbaseHelper.init_cluster(cli_path, cluster, user, pass, ramsize)
+    end
+    not_if {allready_configured}
+  else
     block do
       CouchbaseHelper.add_server(cli_path, cluster, fqdn, user, pass)
     end
