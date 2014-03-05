@@ -86,7 +86,7 @@ module CouchbaseHelper
   end 
 
   def self.set_data_and_index_path(cli_path, fqdn, port, data_path, index_path)
-    cmd_string = "\"#{cli_path}\" node-init -c #{cluster}:#{port} --node-init-data-path=\"#{data_path}\" --node-init-index-path=\"#{index_path}\""
+    cmd_string = "\"#{cli_path}\" node-init -c #{fqdn}:#{port} --node-init-data-path=\"#{data_path}\" --node-init-index-path=\"#{index_path}\""
     cmd = shell_out!(cmd_string, :returns => [0,-1073740777])
     Chef::Log.info("`#{cmd_string}` returned: \n\n #{cmd.stdout}")
   end
