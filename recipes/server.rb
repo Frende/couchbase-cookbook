@@ -28,8 +28,6 @@ if node['couchbase']['server']['cluster-init-server'].nil? || node['couchbase'][
   throw 'No cluster-init-server set!'
 end
 
-allready_configured = CouchbaseHelper.is_configured?(node['couchbase']['server']['cli_path'], node['fqdn'], node['couchbase']['server']['username'], node['couchbase']['server']['password'])
-
 username = ""
 password = ""
 
@@ -43,6 +41,8 @@ else
   username = couchbase_credentials['username']
   password = couchbase_credentials['password']
 end
+
+allready_configured = CouchbaseHelper.is_configured?(node['couchbase']['server']['cli_path'], node['fqdn'], username, password)
 
 remote_file File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file']) do
   source node['couchbase']['server']['package_full_url']
