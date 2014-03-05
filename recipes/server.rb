@@ -111,7 +111,7 @@ directory node['couchbase']['server']['index_path'] do
   recursive true
 end
 
-ruby_block 'Setting CouchBase data and index path'
+ruby_block 'Setting CouchBase data and index path' do
   cli_path = node['couchbase']['server']['cli_path']
   fqdn = node['fqdn']
   port = node['couchbase']['server']['port']
