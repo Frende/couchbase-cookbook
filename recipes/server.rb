@@ -49,14 +49,14 @@ remote_file File.join(Chef::Config[:file_cache_path], node['couchbase']['server'
   action :create_if_missing
 end
 
-template "#{Chef::Config[:file_cache_path]}/setup.iss" do
-  source "setup.iss.erb"
+template "#{Chef::Config[:file_cache_path]}/setup_#{node['couchbase']['server']['version']}.iss" do
+  source "setup_#{node['couchbase']['server']['version']}.iss.erb"
   action :create
 end
 
 windows_package "Couchbase Server" do
   source File.join(Chef::Config[:file_cache_path], node['couchbase']['server']['package_file'])
-  options "/s /f1#{Chef::Config[:file_cache_path]}/setup.iss"
+  options "/s /f1#{Chef::Config[:file_cache_path]}/setup_#{node['couchbase']['server']['version']}.iss"
   installer_type :custom
   action :install
 end
