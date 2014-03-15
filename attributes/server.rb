@@ -36,8 +36,9 @@ end
 default['couchbase']['server']['package_base_url'] = "http://packages.couchbase.com/releases/#{node['couchbase']['server']['version']}"
 default['couchbase']['server']['package_full_url'] = "#{node['couchbase']['server']['package_base_url']}/#{node['couchbase']['server']['package_file']}"
 
-default['couchbase']['server']['cli_cmd'] = "couchbase-cli.exe"
 default['couchbase']['server']['install_dir'] = File.join("C:","Program Files","Couchbase","Server")
+
+default['couchbase']['server']['cli_cmd'] = "couchbase-cli.exe"
 default['couchbase']['server']['cli_dir'] = File.join(node['couchbase']['server']['install_dir'], "bin")
 default['couchbase']['server']['cli_path'] = File.join(node['couchbase']['server']['cli_dir'], node['couchbase']['server']['cli_cmd'])
 

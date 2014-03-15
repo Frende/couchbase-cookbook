@@ -1,11 +1,9 @@
 require "chef/provider"
-require File.join(File.dirname(__FILE__), "client")
 require File.join(File.dirname(__FILE__), "cluster_data")
 
 class Chef
   class Provider
     class CouchbaseCluster < Provider
-      include Couchbase::Client
       include Couchbase::ClusterData
 
       def load_current_resource

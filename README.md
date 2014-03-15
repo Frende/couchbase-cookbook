@@ -51,8 +51,8 @@ couchbase-server
                                                           defaults to Couchbase's maximum allowed value
 * `node['couchbase']['server']['allow_unsigned_packages']` - Whether to allow Couchbase's unsigned packages to be installed (default to 'true')
 
-Credentials
------------
+###Credentials
+
 
 Use:
 
@@ -64,8 +64,7 @@ Or point to a data_bag:
 * `node['couchbase']['server']['databag']`              - Databag (e.g. service_users)
 * `node['couchbase']['server']['databag_name']`         - Databag name inside databag (e.g. prod_env)
 
-Example of data_bag usage
--------------------------
+####Example of data_bag usage
 
 databag: service_users
 
