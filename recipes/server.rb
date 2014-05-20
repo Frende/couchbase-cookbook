@@ -83,10 +83,12 @@ service "CouchbaseServer" do
   supports :restart => true, :status => true
   action [:enable, :start]
   notifies :create, "ruby_block[block_until_operational]", :immediately
+  not_if {allready_configured}
 end
 
 directory node['couchbase']['server']['log_dir'] do
   recursive true
+  not_if {allready_configured}
 end
 
 ruby_block "rewrite_couchbase_log_dir_config" do
@@ -105,10 +107,12 @@ end
 
 directory node['couchbase']['server']['database_path'] do
   recursive true
+  not_if {allready_configured}
 end
 
 directory node['couchbase']['server']['index_path'] do
   recursive true
+  not_if {allready_configured}
 end
 
 ruby_block 'Setting CouchBase data and index path' do
